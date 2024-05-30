@@ -9,7 +9,11 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
+<<<<<<< HEAD
     "jquery": "^3.7.1",
+=======
+    "sweetalert2": "^11.11.0",
+>>>>>>> 6a7531b60d9a5ea5bacc93c5db72d10a8a8ef265
     "vue": "^3.2.13",
     "vue-router": "^4.0.3"
   },
