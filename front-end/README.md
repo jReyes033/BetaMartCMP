@@ -1,4 +1,4 @@
-# betamartcmp-front_end
+# front-end
 
 ## Project setup
 ```
