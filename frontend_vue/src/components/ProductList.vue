@@ -1,6 +1,7 @@
 <template>
   <div class="ProductList">
     <h2>Product List</h2>
+    <button class="btn btn-primary add-product-button" @click="addUser">Add Product</button>
     <div class="table-responsive">
       <table class="table table-striped table-bordered">
         <thead class="thead-dark">
@@ -131,6 +132,9 @@ export default {
             if (product.quantity > 0) {
                 product.quantity--;
             }
+        },
+        addUser() {
+            console.log('Add user clicked');
         }
     }
 }
@@ -169,31 +173,6 @@ export default {
 .btn-info {
   color: white;
   background-color: #17a2b8;
-  border-color: #17a2b8;
 }
 
-.btn-warning {
-  color: white;
-  background-color: #ffc107;
-  border-color: #ffc107;
-}
-
-.btn-danger {
-  color: white;
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-.btn-secondary {
-  color: white;
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
-
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  border-radius: 0.2rem;
-}
 </style>
