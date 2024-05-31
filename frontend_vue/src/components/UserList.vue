@@ -1,6 +1,11 @@
 <template>
   <div class="UserList">
     <h2>User List</h2>
+<<<<<<< HEAD
+    <button class="btn btn-primary add-user-button" @click="addUser">Add User</button>
+=======
+    <button class="btn btn-primary add-user-button" @click="showModal">Add User</button>
+>>>>>>> 675b312f684cfaa1a842dfe7efc7c8347a04cb8f
     <div class="table-responsive">
       <table class="table table-striped">
         <thead class="thead-dark">
@@ -26,6 +31,67 @@
         </tbody>
       </table>
     </div>
+    <!-- Modal for Adding User -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="submitForm">
+              <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" v-model="newUser.name" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" v-model="newUser.email" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" v-model="newUser.password" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Add User</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Editing User -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="submitEditForm">
+              <div class="form-group">
+                <label for="edit-name">Name</label>
+                <input type="text" class="form-control" id="edit-name" v-model="editUserForm.name" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-email">Email</label>
+                <input type="email" class="form-control" id="edit-email" v-model="editUserForm.email" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-password">Password</label>
+                <input type="password" class="form-control" id="edit-password" v-model="editUserForm.password" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -36,11 +102,23 @@ export default {
   name: 'UserList',
   data() {
     return {
-      accounts: [] // Renamed from 'users' to 'accounts'
+      accounts: [],
+      newUser: {
+        name: '',
+        email: '',
+        password: ''
+      },
+      editUserForm: {
+        id: null,
+        name: '',
+        email: '',
+        password: ''
+      },
+      editingUserId: null
     };
   },
   mounted() {
-    this.fetchAccounts(); // Adjusted method name
+    this.fetchAccounts();
   },
   methods: {
     fetchAccounts() {
@@ -58,7 +136,7 @@ export default {
         })
         .then(data => {
           if (data.status === 200) {
-            this.accounts = data.account; // Updated to populate 'accounts' array
+            this.accounts = data.account;
           } else {
             console.error('No records found');
           }
@@ -68,27 +146,9 @@ export default {
         });
     },
     navigateToEdit(accountId) {
-      // Redirect to the edit user page
-      this.$router.push(`/edit-account/${accountId}`);
-    },
-    confirmDeleteUser(accountId) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.deleteAccount(accountId);
-        }
-      });
-    },
-    deleteAccount(accountId) {
-      fetch(`http://127.0.0.1:8000/api/account/${accountId}/delete`, {
-        method: 'DELETE',
+      this.editingUserId = accountId;
+      fetch(`http://127.0.0.1:8000/api/account/${accountId}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -97,16 +157,63 @@ export default {
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          // Remove the deleted account from the accounts array
-          this.accounts = this.accounts.filter(account => account.id !== accountId);
-          // Show a success notification
-          Swal.fire('Deleted!', 'Account has been deleted.', 'success');
+          return response.json();
+        })
+        .then(data => {
+          if (data.status === 200) {
+            this.editUserForm = data.account;
+            $('#editUserModal').modal('show');
+          } else {
+            console.error('No user found');
+          }
         })
         .catch(error => {
-          console.error('Error deleting account:', error);
-          Swal.fire('Error!', 'Failed to delete account.', 'error');
+          console.error('Error fetching user data:', error);
         });
+    },
+<<<<<<< HEAD
+    addUser() {
+      // Implement functionality to add a user
     }
   }
 }
+=======
+    submitEditForm() {
+      fetch(`http://127.0.0.1:8000/api/account/${this.editUserForm.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.editUserForm)
+      })
+        .then(response => {
+          if (!response.ok) {
+            return response.text().then(text => { throw new Error(text) });
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.status === 200) {
+            const index = this.accounts.findIndex(account => account.id === this.editUserForm.id);
+            if (index !== -1) {
+              this.accounts.splice(index, 1, this.editUserForm);
+            }
+            $('#editUserModal').modal('hide');
+            Swal.fire('Updated!', 'User data has been updated successfully.', 'success');
+          } else {
+            console.error('Failed to update user data:', data.message);
+            Swal.fire('Error!', 'Failed to update user data: ' + data.message, 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Error updating user data:', error);
+          Swal.fire('Error!', 'An error occurred while updating user data: ' + error.message, 'error');
+        });
+    },
+    showModal() {
+      $('#addUserModal').modal('show');
+    }
+  }
+};
+>>>>>>> 675b312f684cfaa1a842dfe7efc7c8347a04cb8f
 </script>
