@@ -50,7 +50,11 @@
           </div>
           <div class="form-group">
             <label for="productPrice">Price</label>
-            <input type="number" class="form-control" id="productPrice" v-model="editProductData.price">
+            <input type="number" class="form-control" id="productPrice" v-model="editProductData.price" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="productQuantity">Quantity</label>
+            <input type="number" class="form-control" id="productQuantity" v-model="editProductData.quantity">
           </div>
           <button type="submit" class="btn btn-primary">Save</button>
         </form>
@@ -81,13 +85,14 @@ export default {
         id: null,
         name: '',
         description: '',
-        price: null
+        price: 0.00,
+        quantity: null
       },
       viewProductData: {
         id: null,
         name: '',
         description: '',
-        price: null,
+        price: 0.00,
         quantity: null
       }
     };
