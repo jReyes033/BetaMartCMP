@@ -40,40 +40,44 @@ class AccountController extends Controller
      */
     public function store(Request $request)
     {
-        $validate = Validator::make($request->all(), 
-        [
-            'name' => 'required | string | max:191',
-            'email' => 'required|string|email|max:191|unique:users,email',
-            'password' => 'required | string | min:8 | max:191',
+        // Validate incoming request data
+        $validate = Validator::make($request->all(), [
+            'name' => 'required|string|max:191',
+            'email' => 'required|string|email|max:191|unique:accounts,email',
+            'password' => 'required|string|min:8|max:191',
         ]);
 
+        // If validation fails, return error response
         if ($validate->fails()) {
             return response()->json([
                 'status' => 400,
                 'errors' => $validate->messages()
             ], 400);
-        } 
+        }
 
         try {
-            $account = account::create([
-                'name'=> $request->name,
-                'email'=> $request->email,
-                'password'=> $request->password
-            ]);
+            // Sanitize the incoming data and save it to the database
+            $account = new Account();
+            $account->name = $request->name;
+            $account->email = $request->email;
+            $account->password = bcrypt($request->password); // Hash the password before saving
+            $account->save();
 
+            // Return success response with the newly created account data
             return response()->json([
-                'status' => 200,
-                'message' => "Account Created Succesfully"
-            ], 200);
-
+                'status' => 201,
+                'message' => 'Account Created Successfully',
+                'account' => $account
+            ], 201);
         } catch (\Exception $e) {
+            // Return error response if something goes wrong during the process
             return response()->json([
                 'status' => 500,
-                'message' => "Something went wrong: " . $e->getMessage()
+                'message' => 'Something went wrong: ' . $e->getMessage()
             ], 500);
         }
-        
     }
+
 
     /**
      * Display the specified resource.

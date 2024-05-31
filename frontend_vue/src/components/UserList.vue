@@ -1,7 +1,7 @@
 <template>
   <div class="UserList">
     <h2>User List</h2>
-    <button class="btn btn-primary add-user-button" @click="addUser">Add User</button>
+    <button class="btn btn-primary add-user-button" @click="showModal">Add User</button>
     <div class="table-responsive">
       <table class="table table-striped">
         <thead class="thead-dark">
@@ -27,6 +27,36 @@
         </tbody>
       </table>
     </div>
+    <!-- Modal for Adding User -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="submitForm">
+              <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" v-model="newUser.name" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" v-model="newUser.email" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" v-model="newUser.password" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Add User</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -37,11 +67,16 @@ export default {
   name: 'UserList',
   data() {
     return {
-      accounts: [] // Renamed from 'users' to 'accounts'
+      accounts: [],
+      newUser: {
+        name: '',
+        email: '',
+        password: ''
+      }
     };
   },
   mounted() {
-    this.fetchAccounts(); // Adjusted method name
+    this.fetchAccounts();
   },
   methods: {
     fetchAccounts() {
@@ -59,7 +94,7 @@ export default {
         })
         .then(data => {
           if (data.status === 200) {
-            this.accounts = data.account; // Updated to populate 'accounts' array
+            this.accounts = data.accounts; // Ensure the correct field name
           } else {
             console.error('No records found');
           }
@@ -69,7 +104,6 @@ export default {
         });
     },
     navigateToEdit(accountId) {
-      // Redirect to the edit user page
       this.$router.push(`/edit-account/${accountId}`);
     },
     confirmDeleteUser(accountId) {
@@ -81,7 +115,7 @@ export default {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!'
-      }).then((result) => {
+      }).then(result => {
         if (result.isConfirmed) {
           this.deleteAccount(accountId);
         }
@@ -98,9 +132,7 @@ export default {
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          // Remove the deleted account from the accounts array
           this.accounts = this.accounts.filter(account => account.id !== accountId);
-          // Show a success notification
           Swal.fire('Deleted!', 'Account has been deleted.', 'success');
         })
         .catch(error => {
@@ -108,9 +140,42 @@ export default {
           Swal.fire('Error!', 'Failed to delete account.', 'error');
         });
     },
-    addUser() {
-      // Implement functionality to add a user
+    showModal() {
+      $('#addUserModal').modal('show');
+    },
+    submitForm() {
+      fetch('http://127.0.0.1:8000/api/account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.newUser)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === 201) {
+          // Assuming 'accounts' is an array in your Vue component to store user data
+          this.accounts.push(data.account);
+          // Clear the form fields
+          this.newUser.name = '';
+          this.newUser.email = '';
+          this.newUser.password = '';
+          // Close the modal (if you're using one)
+          // $('#addUserModal').modal('hide');
+          console.log('User added successfully:', data.account);
+        } else {
+          console.error('Failed to add account:', data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error adding account:', error);
+      });
     }
   }
-}
+};
 </script>
