@@ -1,8 +1,13 @@
 <template>
   <div class="ProductList">
     <h2>Product List</h2>
+    <!-- Button to open the Add Product modal -->
+    <button class="btn btn-primary add-user-button" @click="showModal">Add Product</button>
+
+    <!-- Table displaying products -->
     <div class="table-responsive">
       <table class="table table-striped table-bordered">
+        <!-- Table header -->
         <thead class="thead-dark">
           <tr>
             <th>ID</th>
@@ -13,7 +18,9 @@
             <th>Actions</th>
           </tr>
         </thead>
+        <!-- Table body -->
         <tbody>
+          <!-- Loop through products and display each row -->
           <tr v-for="product in products.products" :key="product.id">
             <td>{{ product.id }}</td>
             <td>{{ product.name }}</td>
@@ -34,47 +41,54 @@
       </table>
     </div>
 
-    <Modal v-if="showEditModal" @close="showEditModal = false">
-      <template v-slot:header>
-        <h5>Edit Product Details</h5>
-      </template>
-      <template v-slot:body>
-        <form @submit.prevent="saveProduct">
-          <div class="form-group">
-            <label for="productName">Name</label>
-            <input type="text" class="form-control" id="productName" v-model="editProductData.name">
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Product</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
-          <div class="form-group">
-            <label for="productDescription">Description</label>
-            <input type="text" class="form-control" id="productDescription" v-model="editProductData.description">
+          <div class="modal-body">
+            <!-- Form for adding a new product -->
+            <form @submit.prevent="saveProduct">
+              <div class="form-group">
+                <label for="productName">Name</label>
+                <input type="text" class="form-control" id="productName" v-model="newProduct.name">
+              </div>
+              <div class="form-group">
+                <label for="productDescription">Description</label>
+                <input type="text" class="form-control" id="productDescription" v-model="newProduct.description">
+              </div>
+              <div class="form-group">
+                <label for="productPrice">Price</label>
+                <input type="number" class="form-control" id="productPrice" v-model="newProduct.price" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="productQuantity">Quantity</label>
+                <input type="number" class="form-control" id="productQuantity" v-model="newProduct.quantity">
+              </div>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </form>
           </div>
-          <div class="form-group">
-            <label for="productPrice">Price</label>
-            <input type="number" class="form-control" id="productPrice" v-model="editProductData.price" step="0.01">
-          </div>
-          <div class="form-group">
-            <label for="productQuantity">Quantity</label>
-            <input type="number" class="form-control" id="productQuantity" v-model="editProductData.quantity">
-          </div>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </form>
-      </template>
-    </Modal>
+        </div>
+      </div>
+    </div>
 
+    <!-- ViewModal component -->
     <ViewModal v-if="showViewModal" :product="viewProductData" @close="showViewModal = false" />
-
   </div>
 </template>
 
 <script>
-import Modal from './EditModal.vue';
 import ViewModal from './ViewModal.vue';
 import axios from 'axios';
 
 export default {
   name: 'ProductList',
   components: {
-    Modal,
     ViewModal
   },
   data() {
@@ -82,15 +96,7 @@ export default {
       products: [],
       showEditModal: false,
       showViewModal: false,
-      editProductData: {
-        id: null,
-        name: '',
-        description: '',
-        price: 0.00,
-        quantity: null
-      },
-      viewProductData: {
-        id: null,
+      newProduct: {
         name: '',
         description: '',
         price: 0.00,
@@ -132,27 +138,28 @@ export default {
     },
     async saveProduct() {
       try {
-        // Make the API call to save the product data
-        const response = await axios.put(`http://127.0.0.1:8000/api/products/${this.editProductData.id}/edit`, this.editProductData);
+        // Make the API call to save the new product
+        const response = await axios.post('http://127.0.0.1:8000/api/products', this.newProduct);
+        
+        // If successful, update the local products array
+        this.products.push(response.data);
+        
+        // Hide the modal after successful submission
+        $('#addProductModal').modal('hide');
+        
+        // Clear the new product form fields
+        this.newProduct = {
+          name: '',
+          description: '',
+          price: 0.00,
+          quantity: null
+        };
 
-        // Find the index of the edited product in the local products array
-        const index = this.products.products.findIndex(p => p.id === this.editProductData.id);
-        if (index !== -1) {
-          // Update the local product array with the response data
-          this.products.products.splice(index, 1, response.data);
-        } else {
-          // If the product doesn't exist, add it (in case of a new product)
-          this.products.products.push(response.data);
-        }
-
-        // Hide the edit modal
-        this.showEditModal = false;
-
-        this.fetchProducts();
-
+        // Optionally, fetch the products again to update the list
+        // this.fetchProducts();
       } catch (error) {
-        console.error('There was an error saving the product:', error);
-        // Optionally, handle the error (e.g., show a notification to the user)
+        console.error('Error saving product:', error);
+        // Handle error
       }
     },
     confirmDelete(product) {
