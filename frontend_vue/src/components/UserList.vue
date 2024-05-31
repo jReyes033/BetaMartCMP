@@ -29,7 +29,7 @@
     </div>
     <!-- Modal for Adding User -->
     <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
@@ -86,15 +86,10 @@ export default {
           'Content-Type': 'application/json',
         },
       })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
           if (data.status === 200) {
-            this.accounts = data.accounts; // Ensure the correct field name
+            this.accounts = data.account; // Ensure the correct field name
           } else {
             console.error('No records found');
           }
@@ -151,29 +146,23 @@ export default {
         },
         body: JSON.stringify(this.newUser)
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
         if (data.status === 201) {
-          // Assuming 'accounts' is an array in your Vue component to store user data
           this.accounts.push(data.account);
-          // Clear the form fields
           this.newUser.name = '';
           this.newUser.email = '';
           this.newUser.password = '';
-          // Close the modal (if you're using one)
-          // $('#addUserModal').modal('hide');
-          console.log('User added successfully:', data.account);
+          $('#addUserModal').modal('hide');
+          Swal.fire('Added!', 'Account has been added successfully.', 'success');
         } else {
           console.error('Failed to add account:', data.message);
+          Swal.fire('Error!', 'Failed to add account: ' + data.message, 'error');
         }
       })
       .catch(error => {
         console.error('Error adding account:', error);
+        Swal.fire('Error!', 'An error occurred while adding the account: ' + error.message, 'error');
       });
     }
   }

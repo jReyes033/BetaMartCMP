@@ -13,17 +13,17 @@ class AccountController extends Controller
      */
     public function index()
     {
-        $account = account::all();
-        if ($account->count() > 0) {
+        $accounts = Account::all();
+        if ($accounts->count() > 0) {
             return response()->json([
                 'status' => 200,
-                'account' => $account
-            ],200);
+                'account' => $accounts
+            ], 200);
         } else {
             return response()->json([
                 'status' => 404,
-                'Message' => 'No Records Found'
-            ],404);
+                'message' => 'No Records Found'
+            ], 404);
         }
     }
 
