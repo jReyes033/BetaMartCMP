@@ -69,6 +69,7 @@
 <script>
 import Modal from './EditModal.vue';
 import ViewModal from './ViewModal.vue';
+import axios from 'axios';
 
 export default {
   name: 'ProductList',
@@ -129,12 +130,30 @@ export default {
       this.editProductData = { ...product };
       this.showEditModal = true;
     },
-    saveProduct() {
-      const index = this.products.products.findIndex(p => p.id === this.editProductData.id);
-      if (index !== -1) {
-        this.products.products.splice(index, 1, { ...this.editProductData });
+    async saveProduct() {
+      try {
+        // Make the API call to save the product data
+        const response = await axios.put(`http://127.0.0.1:8000/api/products/${this.editProductData.id}/edit`, this.editProductData);
+
+        // Find the index of the edited product in the local products array
+        const index = this.products.products.findIndex(p => p.id === this.editProductData.id);
+        if (index !== -1) {
+          // Update the local product array with the response data
+          this.products.products.splice(index, 1, response.data);
+        } else {
+          // If the product doesn't exist, add it (in case of a new product)
+          this.products.products.push(response.data);
+        }
+
+        // Hide the edit modal
+        this.showEditModal = false;
+
+        this.fetchProducts();
+
+      } catch (error) {
+        console.error('There was an error saving the product:', error);
+        // Optionally, handle the error (e.g., show a notification to the user)
       }
-      this.showEditModal = false;
     },
     confirmDelete(product) {
       const confirmMessage = `Are you sure you want to delete product id: ${product.id} product name: ${product.name} product description: ${product.description} price: ${product.price}?`;
