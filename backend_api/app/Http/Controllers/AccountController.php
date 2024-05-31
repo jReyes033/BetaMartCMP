@@ -102,10 +102,10 @@ class AccountController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(int $accountID)
+    public function edit(int $accountId)
     {
-        $account = account::find($accountID);
-
+        $account = Account::find($accountId);
+    
         if ($account) {
             return response()->json([
                 'status' => 200,
@@ -114,52 +114,60 @@ class AccountController extends Controller
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => "No account found."
+                'message' => 'User not found.'
             ], 404);
         }
     }
 
+    // Method to update user data
+   
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, int $accountID)
-    {
-        $validate = Validator::make($request->all(), 
-        [
-            'name' => 'required | string | max:191',
-            'email' => 'required|string|email|max:191|unique:users,email',
-            'password' => 'required | string | min:8 | max:191',
+    public function update(Request $request, int $accountId)
+{
+    $account = Account::find($accountId);
+
+    if ($account) {
+        // Validate incoming request data
+        $validate = Validator::make($request->all(), [
+            'name' => 'required|string|max:191',
+            'email' => 'required|string|email|max:191|unique:accounts,email,'.$accountId,
+            'password' => 'nullable|string|min:8|max:191', // Allow password to be nullable
         ]);
 
+        // If validation fails, return error response
         if ($validate->fails()) {
             return response()->json([
                 'status' => 400,
                 'errors' => $validate->messages()
             ], 400);
-        } 
-
-        try {
-            $account = account::find($accountID);
-
-            $account->update([
-                'name'=> $request->name,
-                'email'=> $request->email,
-                'password'=> $request->password
-            ]);
-
-            return response()->json([
-                'status' => 200,
-                'message' => "Account updated Succesfully"
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 500,
-                'message' => "Something went wrong: " . $e->getMessage()
-            ], 500);
         }
 
+        // Update only the fields that are provided in the request
+        $account->fill($request->only(['name', 'email']));
+
+        // Check if a new password is provided, then hash and update it
+        if ($request->has('password')) {
+            $account->password = bcrypt($request->password);
+        }
+
+        // Save the updated account
+        $account->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'User data updated successfully.',
+            'account' => $account
+        ], 200);
+    } else {
+        return response()->json([
+            'status' => 404,
+            'message' => 'User not found.'
+        ], 404);
     }
+}
 
     /**
      * Remove the specified resource from storage.
