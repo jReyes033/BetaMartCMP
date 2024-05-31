@@ -1,6 +1,7 @@
 <template>
   <div class="UserList">
     <h2>User List</h2>
+    <button class="btn btn-primary add-user-button" @click="addUser">Add User</button>
     <div class="table-responsive">
       <table class="table table-striped">
         <thead class="thead-dark">
@@ -106,6 +107,9 @@ export default {
           console.error('Error deleting account:', error);
           Swal.fire('Error!', 'Failed to delete account.', 'error');
         });
+    },
+    addUser() {
+      // Implement functionality to add a user
     }
   }
 }
